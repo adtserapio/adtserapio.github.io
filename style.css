@@ -24,8 +24,8 @@ input {
 }
 
 img {
-	width: 10%;
-	height: 10%;
+	width: 100px;
+	height: 100px;
 }
 
 .title h1 {
