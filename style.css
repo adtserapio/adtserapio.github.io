@@ -65,6 +65,7 @@ svg {
 	border-radius: 4vw;
 	padding: 5px 4vh;
 	background-color: white;
+	color: black;
 	border: 0.25vh solid black;
 	transition: background-color 0.5s;
 }
