@@ -21,11 +21,12 @@ input {
 	flex-direction: column;
 	align-items: center;
 	text-align: left;
+
 }
 
-img {
-	width: 100px;
-	height: 100px;
+svg {
+	height: 10vh;
+	width: 10vh;
 }
 
 .title h1 {
@@ -106,7 +107,7 @@ img {
 	
 } 
 
-img{
+svg{
 	animation: fadeIn 3s ease-in;
 }
 
