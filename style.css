@@ -24,8 +24,9 @@ input {
 
 }
 
-svg {
-	width: 22vh;
+img {
+	width: 4vh;
+	height: 4vh;
 }
 
 .title h1 {
