@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://adtserapio.github.io/sitemap.xml
