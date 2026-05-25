@@ -52,6 +52,9 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+  <!-- Motion animation library -->
+  <script src="https://cdn.jsdelivr.net/npm/motion@11.11.13/dist/motion.js"></script>
+
   <style>
     :root {
       --bg: #ffffff;
@@ -71,13 +74,44 @@
       --shadow: rgba(13, 17, 23, 0.06);
       --shadow-lg: rgba(13, 17, 23, 0.12);
 
-      --maxw: 820px;
-      --padx: 20px;
+      --maxw: 680px;
+      --padx: 40px;
     }
 
 
 
+    .ascii-col {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      z-index: -1;
+      overflow: hidden;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 14px;
+      line-height: 1.2;
+      color: var(--fg);
+      pointer-events: none;
+      user-select: none;
+      word-break: break-all;
+    }
+    .ascii-col-left {
+      left: 0;
+      right: calc(50% + var(--maxw) / 2);
+    }
+    .ascii-col-right {
+      left: calc(50% + var(--maxw) / 2);
+      right: 0;
+    }
+    .ascii-col span {
+      display: inline;
+      opacity: 0;
+    }
+
     * { box-sizing: border-box; }
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
     html, body { height: 100%; }
 
     body {
@@ -101,31 +135,47 @@
     }
 
     /* -----------------------------
-       Left accent
+       ASCII art accents
     ------------------------------ */
-    .accent-left {
-      position: fixed;
-      bottom: 20px;
-      left: -20px;
-      width: 260px;
-      height: auto;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.28;
-    }
-
-    /* -----------------------------
-       Right accent
-    ------------------------------ */
+    .accent-left,
     .accent-right {
       position: fixed;
-      bottom: 20px;
-      right: 0px;
-      width: 300px;
-      height: auto;
+      top: 0;
+      bottom: 0;
       pointer-events: none;
-      z-index: 0;
-      opacity: 0.28;
+      z-index: 1;
+      margin: 0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 7px;
+      line-height: 1.15;
+      letter-spacing: 0px;
+      color: var(--fg);
+      opacity: 1;
+      background: radial-gradient(ellipse at center, var(--bg) 42%, transparent 68%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .accent-left {
+      left: 0;
+      right: calc(50% + var(--maxw) / 2);
+      font-size: 8.5px;
+    }
+    .accent-right {
+      left: calc(50% + var(--maxw) / 2);
+      right: 0;
+    }
+    .accent-left pre,
+    .accent-right pre {
+      margin: 0;
+      font: inherit;
+      line-height: inherit;
+      letter-spacing: inherit;
+      font-weight: bold;
+    }
+    .accent-left span,
+    .accent-right span {
+      opacity: 0;
     }
 
 
@@ -135,7 +185,7 @@
     .wrap {
       max-width: var(--maxw);
       margin: 0 auto;
-      padding: 36px var(--padx) 80px;
+      padding: 60px var(--padx) 80px;
       position: relative;
       z-index: 1;
     }
@@ -145,28 +195,29 @@
       padding: 32px 0;
     }
 
-    .toprow { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .toprow { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center; }
+    .toprow > div { display:flex; flex-direction:column; align-items:center; }
+    .links { margin-top: 8px; }
 
     .avatar {
-      width: 100px;
-      height: 100px;
+      width: 130px;
+      height: 130px;
       border-radius: 50%;
       object-fit: cover;
       border: 1.5px solid rgba(13, 17, 23, 0.7);
       flex-shrink: 0;
-      margin-right: 10px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 3.6vw, 42px);
+      font-size: clamp(32px, 5vw, 42px);
       letter-spacing: -0.3px;
       font-weight: 400;
       color: var(--fg);
       font-family: Georgia, "Times New Roman", Times, serif;
     }
 
-    .links { display:flex; gap:10px; margin-left:auto; }
+    .links { display:flex; gap:10px; }
     .icon {
       display:inline-flex;
       align-items:center;
@@ -189,6 +240,7 @@
       margin: 16px 0 0;
       line-height: 1.8;
       color: var(--muted);
+      text-align: left;
     }
 
     .bio-emphasis {
@@ -289,42 +341,23 @@
     }
 
     /* Responsive accents */
-    @media (max-width: 768px) {
-      .accent-left {
-        width: 180px;
-        bottom: 10px;
-        left: -30px;
-        opacity: 0.18;
-      }
+    @media (max-width: 1400px) {
+      .accent-left,
       .accent-right {
-        width: 200px;
-        bottom: 10px;
-        right: -20px;
-        opacity: 0.18;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .accent-left {
-        width: 140px;
-        bottom: 5px;
-        left: -30px;
-        opacity: 0.14;
-      }
-      .accent-right {
-        width: 160px;
-        bottom: 5px;
-        right: -20px;
-        opacity: 0.14;
+        display: none;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- Heart accent -->
-  <img class="accent-left" src="heart_ascii.png" alt="" aria-hidden="true" draggable="false" />
-  <img class="accent-right" src="brain_ascii.png" alt="" aria-hidden="true" draggable="false" />
+  <!-- Animated ASCII columns -->
+  <div id="ascii-left" class="ascii-col ascii-col-left" aria-hidden="true"></div>
+  <div id="ascii-right" class="ascii-col ascii-col-right" aria-hidden="true"></div>
+
+  <!-- ASCII art accents (generated via animation) -->
+  <div class="accent-left" aria-hidden="true"><pre id="heart-art"></pre></div>
+  <div class="accent-right" aria-hidden="true"><pre id="brain-art"></pre></div>
 
 
   <div class="wrap">
@@ -333,8 +366,7 @@
         <img class="avatar" src="Photo.png" data-hover-src="Wacky_Photo.jpg" alt="Portrait of Adrian Serapio" loading="lazy" draggable="false" />
         <div>
           <h1>Adrian Serapio</h1>
-        </div>
-        <nav class="links" aria-label="profiles">
+          <nav class="links" aria-label="profiles">
           <!-- LinkedIn -->
           <a class="icon" href="https://www.linkedin.com/in/adrian-serapio" target="_blank" rel="noopener" aria-label="LinkedIn">
             <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i>
@@ -359,17 +391,18 @@
           <a class="icon" href="blog/index.html" aria-label="Blog">
             <i class="fa-solid fa-pen-nib" aria-hidden="true"></i>
           </a>
-        </nav>
+          </nav>
+        </div>
       </div>
 
       <p class="intro">
 Hi! I am a PhD student in the joint UC Berkeley-UCSF Bioengineering graduate program, advised by
 <a href="https://profiles.ucsf.edu/yang.yang">Yang Yang</a>, <a href="https://profiles.ucsf.edu/kang.wang">Kang Wang</a>, and <a href="https://profiles.ucsf.edu/jae.sohn">Jae Ho Sohn</a>. 
-I am also pursuing a Designated Emphasis in Computational Precision Health. I previously earned a bachelor’s degree in Electrical Engineering and Computer Science
+I am also pursuing a designated emphasis in Computational Precision Health. I previously earned a bachelor’s degree in Electrical Engineering and Computer Science (EECS)
 from UC Berkeley. 
 <br/> <br/>
-My research focuses on 1) building embodied agentic NLP systems leveraging multimodal electronic health record data and 
-2) deploying AI-driven systems into clinical workflows validated through prospective clinical trials.
+My research focuses on 1) building embodied language agents grounded in multimodal Electronic Health Record (EHR) data and 
+2) implementing AI-driven clinical workflows validated through prospective clinical trials.
       </p>
     </header>
 
@@ -384,6 +417,188 @@ My research focuses on 1) building embodied agentic NLP systems leveraging multi
       © <span id="year"></span> Adrian Serapio
     </footer>
   </div>
+
+  <script>
+    // Animated ASCII columns
+    (function() {
+      const { animate, stagger } = Motion;
+      const chars = '{}[]<>/\\|.-+*~:;!?#@&%^=_01';
+      const charW = 10;
+      const charH = 17;
+
+      function fillColumn(container) {
+        const colWidth = container.offsetWidth;
+        const colHeight = container.offsetHeight || window.innerHeight;
+        if (colWidth < 20) return [];
+
+        const cols = Math.ceil(colWidth / charW) + 5;
+        const rows = Math.ceil(colHeight / charH) * 2;
+        const total = cols * rows;
+
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < total; i++) {
+          const span = document.createElement('span');
+          span.textContent = chars[Math.floor(Math.random() * chars.length)];
+          fragment.appendChild(span);
+        }
+        container.appendChild(fragment);
+        return container.querySelectorAll('span');
+      }
+
+      const leftSpans = fillColumn(document.getElementById('ascii-left'));
+      const rightSpans = fillColumn(document.getElementById('ascii-right'));
+      const allSpans = [...leftSpans, ...rightSpans];
+
+      if (allSpans.length === 0) return;
+
+      // Show all column spans immediately
+      allSpans.forEach(function(s) { s.style.opacity = '1'; });
+
+      // Breathing pulse on the column containers
+      var leftCol = document.getElementById('ascii-left');
+      var rightCol = document.getElementById('ascii-right');
+      leftCol.style.opacity = '0.18';
+      rightCol.style.opacity = '0.18';
+
+      animate(leftCol, { opacity: [0.18, 0.28, 0.18] }, {
+        duration: 4,
+        easing: "ease-in-out",
+        repeat: Infinity
+      });
+
+      animate(rightCol, { opacity: [0.18, 0.28, 0.18] }, {
+        duration: 5,
+        easing: "ease-in-out",
+        repeat: Infinity
+      });
+    })();
+  </script>
+
+  <script>
+    // ASCII art accents — converted from heart_ascii.png and brain_ascii.png
+    (function() {
+      const { animate, stagger } = Motion;
+
+      const heartArt = [
+        '                  .',
+        '                     \'\'.   .,`\'   ^\'',
+        '                .\',!^;+"". ,_^, .iI"`` ..',
+        '                \'+]>!!+I\'" ,>``\'>I :I!I<^ .',
+        '                 `^ .">-I`"l+."<;.I;``,I\'   ..',
+        '                    .:,I+l\'--"~?"!;\'\' .         .',
+        '                  `I>II~,_>+iI;,,"`:,!"    `,". ',
+        '               . :--" i]_-i^.  ^:iIl!!~~^"`!I!I, .',
+        '              . ;]}!\'`!]_;  \':<+-[]--iI;`\'.   !+ .',
+        '            .  "?-iI!~-?:.\'"~-i"`"^\'.  .,l<<~-~I\'',
+        '             .I-[!`.\'~??;^.;?-+i    ^!~~-~!;":,`i_, .',
+        '          . ^+[[<` .``+?>:.;??-;...l?~!"`  \'lI;l_~>\'. ',
+        '           .~[-+,...\'^:??_I>]<,..\';\';?!\'   I>i]: "!" .',
+        '         . :???i`\'  "`\'![]]-:\'`  \'~?: \':"  >~i-^',
+        '         . >]]}-:^I>;;;;:,>I,"""\'\'~]ll+I` `_<...',
+        '         . ~??]--~~li!,.  .,!^":.\' ~?-l`\'.  I+\'',
+        '         . :]-?<<>I!>;`"\'.. ^i\'\'  ,I~~_>`  . ![` .',
+        '           .>[<~-!.,\'"^.\'.`^,,:.\'\'.\'  >~<<ii>-:.',
+        '            .>+-l,`"`\',  .!;\' ,`   ">"\';;I<-"',
+        '              --;::`\'`\' . ^.   .\'^l>iI    `>+ .',
+        '            ..;]_>i!>^".   .\',!,":<l\'II\'. ;]l .',
+        '             . ,_[-~?~I".....",`  :?"  I;,:_+\'',
+        '                \'l-]?[i:`  ..  .;<,, .`\',?~.',
+        '               .  `l_?_i,.\'."`,!>\'";\'.  ;[<',
+        '                 .  `i]}_>:`"""!\' `\'\'.^__\' .',
+        '                   .  `i??<i,,;I\'   \';?_\' .',
+        '                     .  `!-[~>II!`""i]-" .',
+        '                       .  \'I+]-~-++-?+^ .',
+        '                         .  ."ii!i!!"  .',
+        '                           .          .',
+      ];
+
+      const brainArt = [
+        '                                    .    ...       ...',
+        '                                  .                      .',
+        '                          .\'. `^`.  ,.`.,~;`"",". \'^",\'      ...',
+        '                     ...`..^\' ....,<!\'..`~|]"\'.\'\'>{-I;:ll,`.     .',
+        '                 .  .,^\'.  .  .  \'>~\'   ^>(+\'  ,;]>. \'";!_~!>iI:.  .',
+        '               ..` .\' \'.  ,^ .``:,^   `;l~>.  \',;"  ..\' \'^;l+[|(+;.  .',
+        '             .\'.   .`    \'i"   ^l\' . `ii^   .^>l\' ..\';\'   \',Ii-|[_i".  .',
+        '          .   .    .""\'.\'",..;i>` .  \':`  ...:~\' . `i]\'\'\'\'\'\'^![}?!-(-;. .',
+        '          \'  \'\'      <],\'.\'..\'I?" .   ,".. . ,i ..\'I~I```^i++i:\' ^I}1{[: .',
+        '             .    .,>>,   ^".  ,l .   .\'.   .";.. ,"    .\',>?`  \'":-|))):  .',
+        '       . ...    .\' ^^.\'^. ">...\'`         `\'^I;  .\'"^,I:`.^:_i .^,li])(\\)~\' .',
+        '      \'\'.^:,..\'. .\'`\'  ` \'!?`      \'\':,`,Iii>?i;~+~~_>^.  `Ii,`":>;;;-(}1\\[^ .',
+        '     .   .    I, .\';I,:;,l<)],^"`^,!i+}!:l,``\'.`:l,<?`. . ^"":;l<~\'`^;[{i-\\{, .',
+        '     \'iI`:,"^l_`  ^.`:>}{?+!;,`,"^"Ii"`.     .\'   .`^"\' ..\'"I!+>"\'",;;[|>](|1, .',
+        '     .^i[}]1}{?;,I:"Iii~i,.               .\';:.  .``.`\'.\'^;><-I.`,:~]?{-~}){/_..',
+        '        I])\\|{1}-}[_[>,\'              \'`\',i+!\'^I!I!>~><+~_?~!^ ^;i_[|1~>i_))\\]\'.',
+        '       .  "l_+?~_-1);  .:^^;;:;I;i<Il!li!i<-I,;Il>>>ii!>!;"\'\'"I!>+1}_?{--[)(|?..',
+        '        .    \'^:lii<`^\'^::~?!!!>!l"^`^\'.\'.      . `\' . .. `:l>+-[?_-~_)}})(])}`.',
+        '          ...       ">,;;>~^        \'\'`""",,,ll>>>i!!!!lIl!Il__+<i+?+-{~+[))\\[\'.',
+        '              ...... "!>~1; `"::,I>~]_~<-?-~><>~><!l~!I:;<[]_-_-~[?[?]-!-{(\\1; .',
+        '                    . `I_{[[{}]+_~+>Ii<>>~l!;,:l>lI,:;":;!~+??+~~?]_+_]__||-`',
+        '                         `Ii~>?)|(]~_-?--[[??{]?{)1?_?]++_~~?+>i<~}()1|{__:  .',
+        '                       ..     `,,,,::^. ."iI`>+>i;;````:"^\'`,:!+~><]-I:,.  ..',
+        '                         .....         .  \'`,+{?`\'`^  :;;lI!>I+?+_->.    ..',
+        '                              ........   .  `;-->i<,,:l!~[__+l_})[l\' ...',
+        '                                             .;!i<<!>-+~+-??[}_!,.',
+        '                                               ,;;II\' \'\'\'....     .',
+        '                                                `;>i;         ...',
+        '                                                 \'```.',
+      ];
+
+      function renderArt(container, art) {
+        var spans = [];
+        art.forEach(function(line, lineIdx) {
+          for (var i = 0; i < line.length; i++) {
+            var ch = line[i];
+            var span = document.createElement('span');
+            if (ch !== ' ') {
+              span.textContent = ch;
+              spans.push(span);
+            } else {
+              span.textContent = ' ';
+              span.style.opacity = '1';
+            }
+            container.appendChild(span);
+          }
+          if (lineIdx < art.length - 1) {
+            container.appendChild(document.createTextNode('\n'));
+          }
+        });
+        return spans;
+      }
+
+      var heartEl = document.getElementById('heart-art');
+      var brainEl = document.getElementById('brain-art');
+
+      var heartSpans = renderArt(heartEl, heartArt);
+      var brainSpans = renderArt(brainEl, brainArt);
+
+      // Typewriter draw-in: characters appear one by one
+      animate(heartSpans, { opacity: [0, 1] }, {
+        duration: 0.01,
+        delay: stagger(0.003, { from: "first" }),
+        easing: "ease-out"
+      });
+
+      animate(brainSpans, { opacity: [0, 1] }, {
+        duration: 0.01,
+        delay: stagger(0.002, { from: "first" }),
+        easing: "ease-out"
+      });
+
+      // Wave ripple — a brightness wave sweeps across the shape repeatedly
+      function waveRipple(spans) {
+        var from = Math.floor(Math.random() * spans.length);
+        animate(spans, { opacity: [1, 0.3, 1] }, {
+          duration: 1.5,
+          delay: stagger(0.004, { from: from }),
+          easing: "ease-in-out"
+        });
+      }
+
+      setInterval(function() { waveRipple(heartSpans); }, 4000);
+      setInterval(function() { waveRipple(brainSpans); }, 5000);
+    })();
+  </script>
 
   <script>
     const publications = [
