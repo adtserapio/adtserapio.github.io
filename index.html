@@ -167,6 +167,7 @@
     .accent-right {
       left: calc(50% + var(--maxw) / 2);
       right: 0;
+      font-size: 6.5px;
     }
     .accent-left pre,
     .accent-right pre {
@@ -366,6 +367,9 @@
       .accent-left {
         font-size: 6.5px;
       }
+      .accent-right {
+        font-size: 5px;
+      }
     }
     .ascii-banner {
       display: none;
@@ -383,7 +387,7 @@
       word-break: break-all;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1160px) {
       .accent-left,
       .accent-right {
         display: none;
@@ -464,8 +468,8 @@ My research focuses on 1) building embodied language agents grounded in multimod
       <div class="pubs" id="pubs"></div>
     </section>
 
-    <footer>
-      <img src="heart_ascii.png" alt="" draggable="false" style="width:60px; margin-bottom:12px; opacity:0.7;" />
+    <footer style="user-select:none;">
+      <pre id="footer-heart" style="font-family:'Courier New',Courier,monospace; font-size:2.5px; line-height:1.1; letter-spacing:0px; opacity:1.0; margin:0 auto 12px; display:inline-block; font-weight:bold; color:var(--fg);"></pre>
       <br/>
       © <span id="year"></span> Adrian Serapio
     </footer>
@@ -667,7 +671,7 @@ My research focuses on 1) building embodied language agents grounded in multimod
       {
         title: "Radiologically Relevant Clinical History Summarization With Large Language Models: A Multi-Reader Performance Study",
         authors: "<strong>Serapio, A.</strong>*, Chen, T.L.*, Tangsombatvisit, B., Fields, B.K.K., Yu, Y., Guo, Y., Kim, S.K., Miao, B.Y., Sushil, M., Hess, C.P., Majumdar, S., Sohn, J.H.",
-        venue: "In Submission",
+        venue: "In Revision",
         links: [
           { label: "Code", href: "https://github.com/bdrad/llm-radiological-clinical-history-summarization" }
         ]
@@ -701,6 +705,43 @@ My research focuses on 1) building embodied language agents grounded in multimod
     $pubs.innerHTML = publications.map(pubItem).join('');
 
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Footer heart ASCII art
+    (function() {
+      var heartArt = [
+        '                  .',
+        '                     \'\'.   .,`\'   ^\'',
+        '                .\',!^;+"". ,_^, .iI"`` ..',
+        '                \'+]>!!+I\'" ,>``\'>I :I!I<^ .',
+        '                 `^ .">-I`"l+."<;.I;``,I\'   ..',
+        '                    .:,I+l\'--"~?"!;\'\' .         .',
+        '                  `I>II~,_>+iI;,,"`:,!"    `,". ',
+        '               . :--" i]_-i^.  ^:iIl!!~~^"`!I!I, .',
+        '              . ;]}!\'`!]_;  \':<+-[]--iI;`\'.   !+ .',
+        '            .  "?-iI!~-?:.\'"~-i"`"^\'.  .,l<<~-~I\'',
+        '             .I-[!`.\'~??;^.;?-+i    ^!~~-~!;":,`i_, .',
+        '          . ^+[[<` .``+?>:.;??-;...l?~!"`  \'lI;l_~>\'. ',
+        '           .~[-+,...\'^:??_I>]<,..\';\';?!\'   I>i]: "!" .',
+        '         . :???i`\'  "`\'![]]-:\'`  \'~?: \':"  >~i-^',
+        '         . >]]}-:^I>;;;;:,>I,"""\'\'~]ll+I` `_<...',
+        '         . ~??]--~~li!,.  .,!^":.\' ~?-l`\'.  I+\'',
+        '         . :]-?<<>I!>;`"\'.. ^i\'\'  ,I~~_>`  . ![` .',
+        '           .>[<~-!.,\'"^.\'.`^,,:.\'\'.\'  >~<<ii>-:.',
+        '            .>+-l,`"`\',  .!;\' ,`   ">"\';;I<-"',
+        '              --;::`\'`\' . ^.   .\'^l>iI    `>+ .',
+        '            ..;]_>i!>^".   .\',!,":<l\'II\'. ;]l .',
+        '             . ,_[-~?~I".....",`  :?"  I;,:_+\'',
+        '                \'l-]?[i:`  ..  .;<,, .`\',?~.',
+        '               .  `l_?_i,.\'."`,!>\'";\'.  ;[<',
+        '                 .  `i]}_>:`"""!\' `\'\'.^__\' .',
+        '                   .  `i??<i,,;I\'   \';?_\' .',
+        '                     .  `!-[~>II!`""i]-" .',
+        '                       .  \'I+]-~-++-?+^ .',
+        '                         .  ."ii!i!!"  .',
+        '                           .          .',
+      ];
+      document.getElementById('footer-heart').textContent = heartArt.join('\n');
+    })();
 
     // Avatar click toggle
     (function() {
