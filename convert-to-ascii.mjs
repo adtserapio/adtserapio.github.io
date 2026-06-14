@@ -47,8 +47,9 @@ extract.on('close', (code) => {
   const frameCount = Math.floor(raw.length / frameSize);
   console.log(`Extracted ${frameCount} frames (${COLS}x${ROWS} @ ${FPS}fps)`);
 
+  const trimEnd = 2;
   const asciiFrames = [];
-  for (let f = 0; f < frameCount; f++) {
+  for (let f = 0; f < frameCount - trimEnd; f++) {
     const offset = f * frameSize;
     const lines = [];
     for (let r = 0; r < ROWS; r++) {
@@ -67,9 +68,10 @@ extract.on('close', (code) => {
     { output: 'heart_ascii_dark.mp4', bg: [0, 0, 0], fgFn: (t) => [Math.round(228 * t), Math.round(228 * t), Math.round(228 * t)] },
   ];
 
+  const usedFrameCount = asciiFrames.length;
   let done = 0;
   for (const variant of variants) {
-    encodeVariant(asciiFrames, frameCount, variant, () => {
+    encodeVariant(asciiFrames, usedFrameCount, variant, () => {
       done++;
       if (done === variants.length) {
         console.log('Both variants complete.');
@@ -86,7 +88,7 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn }, cb) {
     '-vf', 'colorspace=all=bt709:iall=bt601-6-625:fast=1',
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
     '-color_range', 'pc',
-    '-pix_fmt', 'yuv420p', '-an', output
+    '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', output
   ];
 
   const encode = spawn('ffmpeg', encodeArgs, { stdio: ['pipe', 'inherit', 'inherit'] });
