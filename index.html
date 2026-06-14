@@ -49,9 +49,15 @@
   }
   </script>
 
+<!-- Google Fonts: Manrope -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;550;600;700&family=Manrope:wght@400;500&display=swap" rel="stylesheet" />
+
   <!-- Preload critical assets -->
-  <link rel="preload" href="Photo.png" as="image" />
-  <link rel="preload" href="Child_Photo.jpg" as="image" />
+  <link rel="preload" href="click_me.jpg" as="image" />
+  <link rel="preload" href="choose_me.jpg" as="image" />
+  <link rel="preload" href="love_me.jpg" as="image" />
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" as="style" crossorigin="anonymous" />
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
@@ -59,55 +65,101 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-  <!-- Motion animation library -->
-  <script src="https://cdn.jsdelivr.net/npm/motion@11.11.13/dist/motion.js"></script>
 
   <style>
     :root {
       --bg: #ffffff;
-      --bg-gradient-start: #ffffff;
-      --bg-gradient-end: #ffffff;
       --fg: #0d1117;
       --muted: #57606a;
-
       --accent: #1f6feb;
-      --accent-secondary: #6e40aa;
-
-      --link: #0969da;
-      --link-hover: #033d8b;
-
-      --card-bg: rgba(255, 255, 255, 0.92);
       --card-border: rgba(13, 17, 23, 0.08);
-      --shadow: rgba(13, 17, 23, 0.06);
-      --shadow-lg: rgba(13, 17, 23, 0.12);
-
-      --maxw: 680px;
+      --maxw: 960px;
       --padx: 40px;
     }
 
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --fg: #e4e4e4;
+        --muted: #9ca3af;
+        --accent: #58a6ff;
+        --card-border: rgba(255, 255, 255, 0.25);
+      }
+    }
+    html[data-theme="dark"] {
+      --bg: #000000;
+      --fg: #e4e4e4;
+      --muted: #9ca3af;
+      --accent: #58a6ff;
+      --card-border: rgba(255, 255, 255, 0.25);
+    }
+    html[data-theme="light"] {
+      --bg: #ffffff;
+      --fg: #0d1117;
+      --muted: #57606a;
+      --accent: #1f6feb;
+      --card-border: rgba(13, 17, 23, 0.08);
+    }
 
 
-    .ascii-col {
+
+    .ascii-video-wrap {
       position: fixed;
       top: 0;
+      right: 0;
       bottom: 0;
-      z-index: -1;
-      overflow: hidden;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 14px;
-      line-height: 1.2;
-      color: var(--fg);
+      left: calc(300px + var(--maxw) - 200px);
+      z-index: 0;
       pointer-events: none;
       user-select: none;
-      word-break: break-all;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
-    .ascii-col-left {
-      left: 0;
-      right: calc(50% + var(--maxw) / 2);
+    .ascii-video-wrap video {
+      max-width: 350px;
+      max-height: 575px;
+      object-fit: contain;
+      opacity: 1;
     }
-    .ascii-col-right {
-      left: calc(50% + var(--maxw) / 2);
-      right: 0;
+    @media (max-width: 1400px) {
+      .ascii-video-wrap {
+        position: relative;
+        left: 0;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        justify-content: center;
+        padding: 40px 0;
+      }
+      .ascii-video-wrap video {
+        max-width: 280px;
+        max-height: 460px;
+      }
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background: transparent;
+      border: 1px solid var(--card-border);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+      font-size: 18px;
+      transition: border-color 0.2s ease;
+    }
+    .theme-toggle:hover {
+      border-color: var(--fg);
     }
 
     * { box-sizing: border-box; }
@@ -121,66 +173,22 @@
       margin: 0;
       color: var(--fg);
       background: var(--bg);
-      font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica Neue, Arial, sans-serif;
+      font: 16px/1.7 "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica Neue, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
     a {
       color: var(--fg);
-      text-decoration: none;
+      text-decoration: underline;
     }
-    a:hover { text-decoration: underline; }
+    a:hover { text-decoration: none; }
     a:focus-visible {
       outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
       outline-offset: 3px;
       border-radius: 6px;
     }
 
-    /* -----------------------------
-       ASCII art accents
-    ------------------------------ */
-    .accent-left,
-    .accent-right {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      pointer-events: none;
-      z-index: 1;
-      margin: 0;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 7px;
-      line-height: 1.15;
-      letter-spacing: 0px;
-      color: var(--fg);
-      opacity: 1;
-      background: radial-gradient(ellipse at center, var(--bg) 42%, transparent 68%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .accent-left {
-      left: 0;
-      right: calc(50% + var(--maxw) / 2);
-      font-size: 8.5px;
-    }
-    .accent-right {
-      left: calc(50% + var(--maxw) / 2);
-      right: 0;
-      font-size: 6.5px;
-    }
-    .accent-left pre,
-    .accent-right pre {
-      margin: 0;
-      font: inherit;
-      line-height: inherit;
-      letter-spacing: inherit;
-      font-weight: bold;
-    }
-    .accent-left span,
-    .accent-right span {
-      opacity: 0;
-    }
 
 
     /* -----------------------------
@@ -188,10 +196,22 @@
     ------------------------------ */
     .wrap {
       max-width: var(--maxw);
-      margin: 0 auto;
-      padding: 60px var(--padx) 80px;
+      margin: 0;
+      padding: 60px 40px 80px 240px;
       position: relative;
       z-index: 2;
+    }
+    @media (max-width: 1400px) {
+      .wrap {
+        padding: 40px 24px 60px;
+        margin: 0 auto;
+      }
+      .wrap .toprow { align-items: center; }
+      .wrap .toprow > div { align-items: center; }
+      .wrap h1 { text-align: center; }
+      .wrap nav.links { justify-content: center; }
+      .wrap .intro { text-align: left; }
+      .wrap footer { text-align: center; }
     }
 
     header {
@@ -199,8 +219,8 @@
       padding: 32px 0;
     }
 
-    .toprow { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center; }
-    .toprow > div { display:flex; flex-direction:column; align-items:center; }
+    .toprow { display:flex; flex-direction:column; align-items:flex-start; gap:16px; text-align:left; }
+    .toprow > div { display:flex; flex-direction:column; align-items:flex-start; }
     .links { margin-top: 8px; }
 
     .avatar-wrap {
@@ -217,22 +237,23 @@
       height: 130px;
       object-fit: cover;
       border-radius: 50%;
-      border: 1.5px solid rgba(13, 17, 23, 0.7);
+      border: 1.5px solid var(--fg);
     }
     .avatar-wrap .click-hint {
       font-size: 11px;
-      /* color: var(--muted); */
       opacity: 0.7;
       font-style: italic;
+      text-align: center;
+      width: 130px;
     }
 
     h1 {
       margin: 0;
       font-size: clamp(32px, 5vw, 42px);
       letter-spacing: -0.3px;
-      font-weight: 400;
+      font-weight: 500;
       color: var(--fg);
-      font-family: Georgia, "Times New Roman", Times, serif;
+      font-family: "Spline Sans Mono", monospace;
     }
 
     .links { display:flex; gap:10px; }
@@ -246,6 +267,9 @@
       background: transparent;
       border: 1px solid var(--card-border);
       transition: border-color 0.2s ease;
+    }
+    .icon {
+      text-decoration: none;
     }
     .icon:hover {
       border-color: var(--fg);
@@ -279,18 +303,14 @@
 
     h2 {
       margin: 0 0 4px;
-      font-size: 14px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 400;
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+      font-size: clamp(22px, 3vw, 28px);
+      letter-spacing: -0.3px;
+      color: var(--fg);
+      font-weight: 500;
+      font-family: "Spline Sans Mono", monospace;
     }
 
     .pubs {
-      max-height: 400px;
-      overflow: auto;
-      padding-right: 4px;
       margin-top: 16px;
     }
     .pub {
@@ -302,12 +322,11 @@
     }
     .pub .venue {
       color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
+      font-size: 14px;
+      letter-spacing: -0.2px;
       font-weight: 400;
       margin-bottom: 4px;
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+      font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
     }
     .pub .title {
       font-weight: 400;
@@ -334,19 +353,15 @@
       font-size: 13px;
       font-weight: 400;
       color: var(--muted);
-      border-bottom: 1px solid var(--card-border);
-      border-radius: 0;
+      text-decoration: underline;
       background: none;
-      border-left: 0;
-      border-right: 0;
-      border-top: 0;
-      transition: color 0.2s ease, border-color 0.2s ease;
+      border: none;
+      transition: color 0.2s ease;
       display: inline;
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+      font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
     }
     .pub .links a:hover {
       color: var(--fg);
-      border-color: var(--fg);
       text-decoration: none;
     }
 
@@ -354,69 +369,22 @@
       margin-top: 32px;
       color: var(--muted);
       font-size: 13px;
-      text-align: center;
-      padding: 16px;
+      text-align: left;
+      padding: 16px 0;
     }
 
-    /* Responsive accents */
-    @media (max-width: 1400px) {
-      .accent-left,
-      .accent-right {
-        font-size: 5.5px;
-      }
-      .accent-left {
-        font-size: 6.5px;
-      }
-      .accent-right {
-        font-size: 5px;
-      }
-    }
-    .ascii-banner {
-      display: none;
-      position: relative;
-      width: 100%;
-      height: 70px;
-      overflow: hidden;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 14px;
-      line-height: 1.2;
-      color: var(--fg);
-      opacity: 0.22;
-      pointer-events: none;
-      user-select: none;
-      word-break: break-all;
-    }
-
-    @media (max-width: 1160px) {
-      .accent-left,
-      .accent-right {
-        display: none;
-      }
-      .ascii-banner {
-        display: block;
-      }
-    }
   </style>
 </head>
 
 <body>
-  <!-- Animated ASCII columns -->
-  <div id="ascii-left" class="ascii-col ascii-col-left" aria-hidden="true"></div>
-  <div id="ascii-right" class="ascii-col ascii-col-right" aria-hidden="true"></div>
-
-  <!-- Horizontal ASCII banner (shown on narrow viewports) -->
-  <div id="ascii-banner" class="ascii-banner" aria-hidden="true"></div>
-
-  <!-- ASCII art accents (generated via animation) -->
-  <div class="accent-left" aria-hidden="true"><pre id="heart-art"></pre></div>
-  <div class="accent-right" aria-hidden="true"><pre id="brain-art"></pre></div>
-
-
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-moon" id="theme-icon"></i>
+  </button>
   <div class="wrap">
     <header>
       <div class="toprow">
         <div class="avatar-wrap" id="avatar-toggle">
-          <img src="Photo.png" alt="Portrait of Adrian Serapio" draggable="false" />
+          <img src="click_me.jpg" alt="Portrait of Adrian Serapio" draggable="false" />
           <span class="click-hint">Click me!</span>
         </div>
         <div>
@@ -471,201 +439,55 @@ My research is centered on <a href="https://embodied-clinical-intelligence.githu
     </section>
 
     <footer style="user-select:none;">
-      <img src="heart_ascii.png" alt="" draggable="false" style="width:80px; margin:0 auto 12px; display:block; pointer-events:none; user-select:none;" />
-      © <span id="year"></span> Adrian Serapio
+      <span>© <span id="year"></span> Adrian Serapio</span>
     </footer>
   </div>
 
+  <!-- ASCII animation video (right side on desktop, below content on mobile) -->
+  <div class="ascii-video-wrap" aria-hidden="true">
+    <video id="ascii-video" autoplay muted loop playsinline></video>
+  </div>
   <script>
-    // Animated ASCII columns
-    window.addEventListener('load', function() {
-    requestAnimationFrame(function() {
     (function() {
-      var { animate } = Motion;
-      var chars = '{}[]<>/\\|.-+*~:;!?#@&%^=_01';
-      var charW = 10;
-      var charH = 17;
+      var video = document.getElementById('ascii-video');
+      var toggle = document.getElementById('theme-toggle');
+      var icon = document.getElementById('theme-icon');
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      var currentSrc = '';
 
-      function fillColumn(container) {
-        var colWidth = container.offsetWidth;
-        var colHeight = container.offsetHeight || window.innerHeight;
-        if (colWidth < 20) return;
+      function isDark() {
+        var theme = document.documentElement.getAttribute('data-theme');
+        if (theme) return theme === 'dark';
+        return mq.matches;
+      }
 
-        var cols = Math.ceil(colWidth / charW) + 5;
-        var rows = Math.ceil(colHeight / charH) * 2;
-        var total = cols * rows;
-        var text = '';
-        for (var i = 0; i < total; i++) {
-          text += chars[Math.floor(Math.random() * chars.length)];
+      function apply() {
+        var dark = isDark();
+        document.body.style.background = dark ? '#000000' : '#ffffff';
+        icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        var src = dark ? 'heart_ascii_dark.mp4' : 'heart_ascii_light.mp4';
+        if (src !== currentSrc) {
+          currentSrc = src;
+          video.src = src;
+          video.load();
+          video.play();
         }
-        container.textContent = text;
       }
 
-      var leftCol = document.getElementById('ascii-left');
-      var rightCol = document.getElementById('ascii-right');
-      fillColumn(leftCol);
-      fillColumn(rightCol);
-
-      leftCol.style.opacity = '0.18';
-      rightCol.style.opacity = '0.18';
-
-      animate(leftCol, { opacity: [0.18, 0.28, 0.18] }, {
-        duration: 4,
-        easing: "ease-in-out",
-        repeat: Infinity
+      toggle.addEventListener('click', function() {
+        var dark = isDark();
+        document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+        apply();
       });
 
-      animate(rightCol, { opacity: [0.18, 0.28, 0.18] }, {
-        duration: 5,
-        easing: "ease-in-out",
-        repeat: Infinity
+      mq.addEventListener('change', function() {
+        if (!document.documentElement.getAttribute('data-theme')) apply();
       });
 
-      // Horizontal banner for narrow viewports — always fill so it's ready when viewport shrinks
-      var banner = document.getElementById('ascii-banner');
-      var bannerW = window.innerWidth;
-      var bannerH = 70;
-      var bCols = Math.ceil(bannerW / charW) + 5;
-      var bRows = Math.ceil(bannerH / charH) * 2;
-      var bTotal = bCols * bRows;
-      var bText = '';
-      for (var b = 0; b < bTotal; b++) {
-        bText += chars[Math.floor(Math.random() * chars.length)];
-      }
-      banner.textContent = bText;
-      animate(banner, { opacity: [0.22, 0.32, 0.22] }, {
-        duration: 4.5,
-        easing: "ease-in-out",
-        repeat: Infinity
-      });
+      apply();
     })();
-
-    // ASCII art accents — converted from heart_ascii.png and brain_ascii.png
-    (function() {
-      const { animate, stagger } = Motion;
-
-      const heartArt = [
-        '                  .',
-        '                     \'\'.   .,`\'   ^\'',
-        '                .\',!^;+"". ,_^, .iI"`` ..',
-        '                \'+]>!!+I\'" ,>``\'>I :I!I<^ .',
-        '                 `^ .">-I`"l+."<;.I;``,I\'   ..',
-        '                    .:,I+l\'--"~?"!;\'\' .         .',
-        '                  `I>II~,_>+iI;,,"`:,!"    `,". ',
-        '               . :--" i]_-i^.  ^:iIl!!~~^"`!I!I, .',
-        '              . ;]}!\'`!]_;  \':<+-[]--iI;`\'.   !+ .',
-        '            .  "?-iI!~-?:.\'"~-i"`"^\'.  .,l<<~-~I\'',
-        '             .I-[!`.\'~??;^.;?-+i    ^!~~-~!;":,`i_, .',
-        '          . ^+[[<` .``+?>:.;??-;...l?~!"`  \'lI;l_~>\'. ',
-        '           .~[-+,...\'^:??_I>]<,..\';\';?!\'   I>i]: "!" .',
-        '         . :???i`\'  "`\'![]]-:\'`  \'~?: \':"  >~i-^',
-        '         . >]]}-:^I>;;;;:,>I,"""\'\'~]ll+I` `_<...',
-        '         . ~??]--~~li!,.  .,!^":.\' ~?-l`\'.  I+\'',
-        '         . :]-?<<>I!>;`"\'.. ^i\'\'  ,I~~_>`  . ![` .',
-        '           .>[<~-!.,\'"^.\'.`^,,:.\'\'.\'  >~<<ii>-:.',
-        '            .>+-l,`"`\',  .!;\' ,`   ">"\';;I<-"',
-        '              --;::`\'`\' . ^.   .\'^l>iI    `>+ .',
-        '            ..;]_>i!>^".   .\',!,":<l\'II\'. ;]l .',
-        '             . ,_[-~?~I".....",`  :?"  I;,:_+\'',
-        '                \'l-]?[i:`  ..  .;<,, .`\',?~.',
-        '               .  `l_?_i,.\'."`,!>\'";\'.  ;[<',
-        '                 .  `i]}_>:`"""!\' `\'\'.^__\' .',
-        '                   .  `i??<i,,;I\'   \';?_\' .',
-        '                     .  `!-[~>II!`""i]-" .',
-        '                       .  \'I+]-~-++-?+^ .',
-        '                         .  ."ii!i!!"  .',
-        '                           .          .',
-      ];
-
-      const brainArt = [
-        '                                    .    ...       ...',
-        '                                  .                      .',
-        '                          .\'. `^`.  ,.`.,~;`"",". \'^",\'      ...',
-        '                     ...`..^\' ....,<!\'..`~|]"\'.\'\'>{-I;:ll,`.     .',
-        '                 .  .,^\'.  .  .  \'>~\'   ^>(+\'  ,;]>. \'";!_~!>iI:.  .',
-        '               ..` .\' \'.  ,^ .``:,^   `;l~>.  \',;"  ..\' \'^;l+[|(+;.  .',
-        '             .\'.   .`    \'i"   ^l\' . `ii^   .^>l\' ..\';\'   \',Ii-|[_i".  .',
-        '          .   .    .""\'.\'",..;i>` .  \':`  ...:~\' . `i]\'\'\'\'\'\'^![}?!-(-;. .',
-        '          \'  \'\'      <],\'.\'..\'I?" .   ,".. . ,i ..\'I~I```^i++i:\' ^I}1{[: .',
-        '             .    .,>>,   ^".  ,l .   .\'.   .";.. ,"    .\',>?`  \'":-|))):  .',
-        '       . ...    .\' ^^.\'^. ">...\'`         `\'^I;  .\'"^,I:`.^:_i .^,li])(\\)~\' .',
-        '      \'\'.^:,..\'. .\'`\'  ` \'!?`      \'\':,`,Iii>?i;~+~~_>^.  `Ii,`":>;;;-(}1\\[^ .',
-        '     .   .    I, .\';I,:;,l<)],^"`^,!i+}!:l,``\'.`:l,<?`. . ^"":;l<~\'`^;[{i-\\{, .',
-        '     \'iI`:,"^l_`  ^.`:>}{?+!;,`,"^"Ii"`.     .\'   .`^"\' ..\'"I!+>"\'",;;[|>](|1, .',
-        '     .^i[}]1}{?;,I:"Iii~i,.               .\';:.  .``.`\'.\'^;><-I.`,:~]?{-~}){/_..',
-        '        I])\\|{1}-}[_[>,\'              \'`\',i+!\'^I!I!>~><+~_?~!^ ^;i_[|1~>i_))\\]\'.',
-        '       .  "l_+?~_-1);  .:^^;;:;I;i<Il!li!i<-I,;Il>>>ii!>!;"\'\'"I!>+1}_?{--[)(|?..',
-        '        .    \'^:lii<`^\'^::~?!!!>!l"^`^\'.\'.      . `\' . .. `:l>+-[?_-~_)}})(])}`.',
-        '          ...       ">,;;>~^        \'\'`""",,,ll>>>i!!!!lIl!Il__+<i+?+-{~+[))\\[\'.',
-        '              ...... "!>~1; `"::,I>~]_~<-?-~><>~><!l~!I:;<[]_-_-~[?[?]-!-{(\\1; .',
-        '                    . `I_{[[{}]+_~+>Ii<>>~l!;,:l>lI,:;":;!~+??+~~?]_+_]__||-`',
-        '                         `Ii~>?)|(]~_-?--[[??{]?{)1?_?]++_~~?+>i<~}()1|{__:  .',
-        '                       ..     `,,,,::^. ."iI`>+>i;;````:"^\'`,:!+~><]-I:,.  ..',
-        '                         .....         .  \'`,+{?`\'`^  :;;lI!>I+?+_->.    ..',
-        '                              ........   .  `;-->i<,,:l!~[__+l_})[l\' ...',
-        '                                             .;!i<<!>-+~+-??[}_!,.',
-        '                                               ,;;II\' \'\'\'....     .',
-        '                                                `;>i;         ...',
-        '                                                 \'```.',
-      ];
-
-      function renderArt(container, art) {
-        var spans = [];
-        art.forEach(function(line, lineIdx) {
-          for (var i = 0; i < line.length; i++) {
-            var ch = line[i];
-            var span = document.createElement('span');
-            if (ch !== ' ') {
-              span.textContent = ch;
-              spans.push(span);
-            } else {
-              span.textContent = ' ';
-              span.style.opacity = '1';
-            }
-            container.appendChild(span);
-          }
-          if (lineIdx < art.length - 1) {
-            container.appendChild(document.createTextNode('\n'));
-          }
-        });
-        return spans;
-      }
-
-      var heartEl = document.getElementById('heart-art');
-      var brainEl = document.getElementById('brain-art');
-
-      var heartSpans = renderArt(heartEl, heartArt);
-      var brainSpans = renderArt(brainEl, brainArt);
-
-      // Typewriter draw-in: characters appear one by one
-      animate(heartSpans, { opacity: [0, 1] }, {
-        duration: 0.01,
-        delay: stagger(0.003, { from: "first" }),
-        easing: "ease-out"
-      });
-
-      animate(brainSpans, { opacity: [0, 1] }, {
-        duration: 0.01,
-        delay: stagger(0.002, { from: "first" }),
-        easing: "ease-out"
-      });
-
-      // Wave ripple — a brightness wave sweeps across the shape repeatedly
-      function waveRipple(spans) {
-        var from = Math.floor(Math.random() * spans.length);
-        animate(spans, { opacity: [1, 0.3, 1] }, {
-          duration: 1.5,
-          delay: stagger(0.004, { from: from }),
-          easing: "ease-in-out"
-        });
-      }
-
-      setInterval(function() { waveRipple(heartSpans); }, 4000);
-      setInterval(function() { waveRipple(brainSpans); }, 5000);
-    })();
-    }); // end requestAnimationFrame
-    }); // end window load
   </script>
+
 
   <script>
     const publications = [
@@ -712,12 +534,15 @@ My research is centered on <a href="https://embodied-clinical-intelligence.githu
     (function() {
       var wrap = document.getElementById('avatar-toggle');
       var img = wrap.querySelector('img');
-      var src1 = 'Photo.png';
-      var src2 = 'Child_Photo.jpg';
-      var isWacky = false;
+      var hint = wrap.querySelector('.click-hint');
+      var photos = ['click_me.jpg', 'choose_me.jpg', 'love_me.jpg'];
+      var hints = ['Click me!', 'Choose me!', 'Love me!'];
+      var clickCount = 0;
       wrap.addEventListener('click', function() {
-        isWacky = !isWacky;
-        img.src = isWacky ? src2 : src1;
+        clickCount++;
+        var idx = clickCount % photos.length;
+        img.src = photos[idx];
+        hint.textContent = hints[idx];
       });
     })();
   </script>
