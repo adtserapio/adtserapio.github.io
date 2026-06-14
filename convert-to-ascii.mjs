@@ -62,6 +62,8 @@ extract.on('close', (code) => {
     asciiFrames.push(lines.join('\n'));
   }
 
+  asciiFrames.reverse();
+
   // Encode both variants
   const variants = [
     { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], fgFn: (t) => [Math.round(255 * (1 - t)), Math.round(255 * (1 - t)), Math.round(255 * (1 - t))] },
