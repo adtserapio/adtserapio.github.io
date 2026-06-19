@@ -1,6 +1,6 @@
 :root {
   --bg: #ffffff;
-  --fg: #0d1117;
+  --fg: #000000;
   --muted: #57606a;
   --card-border: rgba(13, 17, 23, 0.08);
   --accent: #1f6feb;
@@ -26,7 +26,7 @@ html[data-theme="dark"] {
 }
 html[data-theme="light"] {
   --bg: #ffffff;
-  --fg: #0d1117;
+  --fg: #000000;
   --muted: #57606a;
   --accent: #1f6feb;
   --card-border: rgba(13, 17, 23, 0.08);
