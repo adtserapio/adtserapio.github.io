@@ -3,8 +3,8 @@ import { mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
 const INPUT = 'heart.mp4';
-const COLS = 105;
-const ROWS = 75;
+const COLS = 60;
+const ROWS = 43;
 const FPS = 24;
 
 const RAMP = ' .:-=+*#%@';
@@ -16,8 +16,18 @@ const CONTRAST = 1.6;
 
 const cellW = 8;
 const cellH = 14;
+// Display resolution of the encoded video.
 const videoW = COLS * cellW;
 const videoH = ROWS * cellH;
+
+// Supersampling: render the raw frame SS× larger, then downscale with lanczos
+// in the encode. This anti-aliases the hard glyph-rectangle edges (which
+// otherwise alias/shimmer and get mangled by H.264).
+const SS = 3;
+const ssCellW = cellW * SS;
+const ssCellH = cellH * SS;
+const ssW = videoW * SS;
+const ssH = videoH * SS;
 
 function lumaToChar(luma) {
   const inverted = 255 - luma;
@@ -102,9 +112,11 @@ extract.on('close', (code) => {
 function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }, cb) {
   const encodeArgs = [
     '-y', '-f', 'rawvideo', '-pixel_format', 'rgb24',
-    '-video_size', `${videoW}x${videoH}`,
+    '-video_size', `${ssW}x${ssH}`,
     '-framerate', String(FPS), '-i', '-',
-    '-vf', `eq=contrast=${CONTRAST},colorspace=all=bt709:iall=bt601-6-625:fast=1`,
+    // Downscale the supersampled frame with lanczos (anti-aliases glyph edges),
+    // then apply contrast + colorspace at display resolution.
+    '-vf', `scale=${videoW}:${videoH}:flags=lanczos,eq=contrast=${CONTRAST},colorspace=all=bt709:iall=bt601-6-625:fast=1`,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
     '-color_range', 'pc',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', output
@@ -119,13 +131,17 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }
       return;
     }
 
-    const frameBuffer = Buffer.alloc(videoW * videoH * 3);
+    const frameBuffer = Buffer.alloc(ssW * ssH * 3);
     // Fill background
-    for (let i = 0; i < videoW * videoH; i++) {
+    for (let i = 0; i < ssW * ssH; i++) {
       frameBuffer[i * 3] = bg[0];
       frameBuffer[i * 3 + 1] = bg[1];
       frameBuffer[i * 3 + 2] = bg[2];
     }
+
+    // Padding scaled to the supersampled grid.
+    const ssPadX = padX * SS;
+    const ssPadY = padY * SS;
 
     const lines = asciiFrames[framesWritten].split('\n');
     for (let r = 0; r < lines.length; r++) {
@@ -139,11 +155,11 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }
         const t = brightness / 255;
         const [rv, gv, bv] = fgFn(t);
 
-        const startX = c * cellW;
-        const startY = r * cellH;
-        for (let py = startY + padY; py < startY + cellH - padY && py < videoH; py++) {
-          for (let px = startX + padX; px < startX + cellW - padX && px < videoW; px++) {
-            const idx = (py * videoW + px) * 3;
+        const startX = c * ssCellW;
+        const startY = r * ssCellH;
+        for (let py = startY + ssPadY; py < startY + ssCellH - ssPadY && py < ssH; py++) {
+          for (let px = startX + ssPadX; px < startX + ssCellW - ssPadX && px < ssW; px++) {
+            const idx = (py * ssW + px) * 3;
             frameBuffer[idx] = rv;
             frameBuffer[idx + 1] = gv;
             frameBuffer[idx + 2] = bv;
