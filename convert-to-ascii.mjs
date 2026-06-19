@@ -3,12 +3,16 @@ import { mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
 const INPUT = 'heart.mp4';
-const COLS = 70;
-const ROWS = 50;
+const COLS = 105;
+const ROWS = 75;
 const FPS = 24;
 
 const RAMP = ' .:-=+*#%@';
 const CROP = 'crop=800:1000:558:40';
+
+// Global contrast boost baked into the encode — replicates a "max contrast"
+// editor pass: pushes greys toward black/white while keeping a thin detail band.
+const CONTRAST = 1.6;
 
 const cellW = 8;
 const cellH = 14;
@@ -17,8 +21,13 @@ const videoH = ROWS * cellH;
 
 function lumaToChar(luma) {
   const inverted = 255 - luma;
-  if (inverted < 35) return ' ';
-  const idx = Math.floor((inverted / 255) * (RAMP.length - 1));
+  // Contrast-stretch + gamma: spread mp4 midtones toward the extremes so the
+  // ramp uses its full range instead of clustering on faint glyphs.
+  const BLACK = 25, WHITE = 195, GAMMA = 0.9;
+  const norm = Math.min(1, Math.max(0, (inverted - BLACK) / (WHITE - BLACK)));
+  const stretched = 255 * Math.pow(norm, GAMMA);
+  if (stretched < 18) return ' ';
+  const idx = Math.floor((stretched / 255) * (RAMP.length - 1));
   return RAMP[idx];
 }
 
@@ -64,10 +73,18 @@ extract.on('close', (code) => {
 
   asciiFrames.reverse();
 
-  // Encode both variants
+  // Two independent axes per variant:
+  //   FLOOR — tonal gradient (low = more grey separation between features)
+  //   pad   — ink coverage / heaviness (low = bigger, heavier marks)
+  // Light needs heavier marks (less padding) to feel weighty on white, plus a
+  // lower floor so a real grey gradient separates detail instead of fusing.
+  // Backgrounds stay pure white / pure black so the page's mix-blend-mode
+  // (multiply / screen) makes the video edge seamless.
+  const FLOOR_LIGHT = 0.55;
+  const FLOOR_DARK = 0.5;
   const variants = [
-    { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], fgFn: (t) => [Math.round(255 * (1 - t)), Math.round(255 * (1 - t)), Math.round(255 * (1 - t))] },
-    { output: 'heart_ascii_dark.mp4', bg: [0, 0, 0], fgFn: (t) => [Math.round(228 * t), Math.round(228 * t), Math.round(228 * t)] },
+    { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], padX: 2, padY: 3, fgFn: (t) => { const v = Math.round(255 * (1 - (FLOOR_LIGHT + (1 - FLOOR_LIGHT) * t))); return [v, v, v]; } },
+    { output: 'heart_ascii_dark.mp4', bg: [0, 0, 0], padX: 2, padY: 3, fgFn: (t) => { const v = Math.round(228 * (FLOOR_DARK + (1 - FLOOR_DARK) * t)); return [v, v, v]; } },
   ];
 
   const usedFrameCount = asciiFrames.length;
@@ -82,12 +99,12 @@ extract.on('close', (code) => {
   }
 });
 
-function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn }, cb) {
+function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }, cb) {
   const encodeArgs = [
     '-y', '-f', 'rawvideo', '-pixel_format', 'rgb24',
     '-video_size', `${videoW}x${videoH}`,
     '-framerate', String(FPS), '-i', '-',
-    '-vf', 'colorspace=all=bt709:iall=bt601-6-625:fast=1',
+    '-vf', `eq=contrast=${CONTRAST},colorspace=all=bt709:iall=bt601-6-625:fast=1`,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
     '-color_range', 'pc',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', output
@@ -124,8 +141,6 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn }, cb) {
 
         const startX = c * cellW;
         const startY = r * cellH;
-        const padX = 2;
-        const padY = 3;
         for (let py = startY + padY; py < startY + cellH - padY && py < videoH; py++) {
           for (let px = startX + padX; px < startX + cellW - padX && px < videoW; px++) {
             const idx = (py * videoW + px) * 3;
