@@ -3,8 +3,13 @@ import { mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
 const INPUT = 'heart.mp4';
-const COLS = 60;
-const ROWS = 43;
+// Grid sized so the encoded video is exactly 700px wide = 2x the 350px CSS
+// display width. On retina (2x DPR) that's a 1:1 map (no resample); on 1x
+// screens it's a clean 2:1 downscale. Both avoid the fractional-resample
+// moiré, so we can afford a finer grid (more detail) than the 60x43 we used
+// to hide the moiré.
+const COLS = 70;
+const ROWS = 63;  // 700x882 keeps the source's 0.8 portrait aspect (crop 800x1000)
 const FPS = 24;
 
 const RAMP = ' .:-=+*#%@';
@@ -14,7 +19,12 @@ const CROP = 'crop=800:1000:558:40';
 // editor pass: pushes greys toward black/white while keeping a thin detail band.
 const CONTRAST = 1.6;
 
-const cellW = 8;
+// Slight blur (in final display pixels) softens the hard dot-grid so its
+// periodic on/off pattern can't beat against the screen pixel grid — this is
+// what kills moiré across arbitrary zoom/DPR levels, which no encode size can.
+const BLUR = 0.8;
+
+const cellW = 10;  // 70 cols * 10 = 700px wide = 2x the 350px CSS display
 const cellH = 14;
 // Display resolution of the encoded video.
 const videoW = COLS * cellW;
@@ -116,7 +126,7 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }
     '-framerate', String(FPS), '-i', '-',
     // Downscale the supersampled frame with lanczos (anti-aliases glyph edges),
     // then apply contrast + colorspace at display resolution.
-    '-vf', `scale=${videoW}:${videoH}:flags=lanczos,eq=contrast=${CONTRAST},colorspace=all=bt709:iall=bt601-6-625:fast=1`,
+    '-vf', `scale=${videoW}:${videoH}:flags=lanczos,gblur=sigma=${BLUR},eq=contrast=${CONTRAST},colorspace=all=bt709:iall=bt601-6-625:fast=1`,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
     '-color_range', 'pc',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', output
