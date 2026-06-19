@@ -79,17 +79,17 @@
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #000000;
-        --fg: #e4e4e4;
-        --muted: #9ca3af;
+        --bg: #0d1117;
+        --fg: #c9d1d9;
+        --muted: #8b949e;
         --accent: #58a6ff;
         --card-border: rgba(255, 255, 255, 0.25);
       }
     }
     html[data-theme="dark"] {
-      --bg: #000000;
-      --fg: #e4e4e4;
-      --muted: #9ca3af;
+      --bg: #0d1117;
+      --fg: #c9d1d9;
+      --muted: #8b949e;
       --accent: #58a6ff;
       --card-border: rgba(255, 255, 255, 0.25);
     }
@@ -116,13 +116,25 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      /* Opaque bg matching the page so the video's flat background can blend
+         into it (mix-blend-mode blends within this stacking context, not the
+         whole page). Makes the video rectangle seamless. */
+      background: var(--bg);
     }
     .ascii-video-wrap video {
       max-width: 350px;
       max-height: 575px;
       object-fit: contain;
       opacity: 1;
+      /* white bg + multiply (light), black bg + screen (dark): the flat video
+         background resolves exactly to the page bg, so its edge is invisible. */
+      mix-blend-mode: multiply;
     }
+    @media (prefers-color-scheme: dark) {
+      .ascii-video-wrap video { mix-blend-mode: screen; }
+    }
+    html[data-theme="dark"] .ascii-video-wrap video { mix-blend-mode: screen; }
+    html[data-theme="light"] .ascii-video-wrap video { mix-blend-mode: multiply; }
     @media (max-width: 1400px) {
       .ascii-video-wrap {
         position: relative;
@@ -421,11 +433,11 @@
 
       <p class="intro">
 Hi! I am a PhD student in the joint UC Berkeley-UCSF Bioengineering graduate program, advised by
-<a href="https://profiles.ucsf.edu/yang.yang">Yang Yang</a>, <a href="https://profiles.ucsf.edu/kang.wang">Kang Wang</a>, and <a href="https://profiles.ucsf.edu/jae.sohn">Jae Ho Sohn</a>. 
+<a href="https://profiles.ucsf.edu/yang.yang" target="_blank" rel="noopener">Yang Yang</a>, <a href="https://profiles.ucsf.edu/kang.wang" target="_blank" rel="noopener">Kang Wang</a>, and <a href="https://profiles.ucsf.edu/jae.sohn" target="_blank" rel="noopener">Jae Ho Sohn</a>.
 I am also pursuing a designated emphasis in Computational Precision Health. I previously earned a bachelor’s degree in Electrical Engineering and Computer Science (EECS)
 from UC Berkeley. 
 <br/> <br/>
-My research is centered on <a href="https://embodied-clinical-intelligence.github.io">Embodied Clinical Intelligence</a> with the goals of 
+My research is centered on <a href="https://embodied-clinical-intelligence.github.io" target="_blank" rel="noopener">Embodied Clinical Intelligence</a> with the goals of
 1) building intelligent assistants that can support clinical workflows and decision-making, 
 2) architecting multimodal AI systems grounded in clinical context and diagnostic explainability, and 
 3) establishing the clinician-AI interface for seamless interaction and synergistic collaboration.
@@ -464,7 +476,7 @@ My research is centered on <a href="https://embodied-clinical-intelligence.githu
 
       function apply() {
         var dark = isDark();
-        document.body.style.background = dark ? '#000000' : '#ffffff';
+        document.body.style.background = dark ? '#0d1117' : '#ffffff';
         icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         var src = dark ? 'heart_ascii_dark.mp4' : 'heart_ascii_light.mp4';
         if (src !== currentSrc) {
