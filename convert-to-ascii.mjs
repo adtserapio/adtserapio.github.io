@@ -8,12 +8,21 @@ const INPUT = 'heart.mp4';
 // screens it's a clean 2:1 downscale. Both avoid the fractional-resample
 // moiré, so we can afford a finer grid (more detail) than the 60x43 we used
 // to hide the moiré.
-const COLS = 70;
-const ROWS = 63;  // 700x882 keeps the source's 0.8 portrait aspect (crop 800x1000)
+const COLS = 100;
+const ROWS = 90;  // 700x900 keeps the source's ~0.8 portrait aspect (crop 800x1000)
 const FPS = 24;
 
 const RAMP = ' .:-=+*#%@';
 const CROP = 'crop=800:1000:558:40';
+
+// The coronary arteries are blue/purple veins on red tissue. Standard luma
+// weights blue at only ~11%, so they vanish into the body — which is why the
+// arteries had disappeared. This mix over-weights blue (and flattens R/G) so
+// the vessels keep contrast against the heart when we collapse to gray.
+const VESSEL_MIX = 'colorchannelmixer=' +
+  'rr=0.25:rg=0.25:rb=0.9:' +
+  'gr=0.25:gg=0.25:gb=0.9:' +
+  'br=0.25:bg=0.25:bb=0.9';
 
 // Global contrast boost baked into the encode — replicates a "max contrast"
 // editor pass: pushes greys toward black/white while keeping a thin detail band.
@@ -24,8 +33,8 @@ const CONTRAST = 1.6;
 // what kills moiré across arbitrary zoom/DPR levels, which no encode size can.
 const BLUR = 0.8;
 
-const cellW = 10;  // 70 cols * 10 = 700px wide = 2x the 350px CSS display
-const cellH = 14;
+const cellW = 7;  // 100 cols * 7 = 700px wide = 2x the 350px CSS display
+const cellH = 10; // 90 rows * 10 = 900px, ~matches the 800x1000 crop aspect
 // Display resolution of the encoded video.
 const videoW = COLS * cellW;
 const videoH = ROWS * cellH;
@@ -59,7 +68,7 @@ for (let i = 0; i < RAMP.length; i++) {
 // Extract frames
 const extractArgs = [
   '-i', INPUT,
-  '-vf', `${CROP},scale=${COLS}:${ROWS}:flags=lanczos,format=gray`,
+  '-vf', `${CROP},${VESSEL_MIX},scale=${COLS}:${ROWS}:flags=lanczos,format=gray`,
   '-f', 'rawvideo', '-pix_fmt', 'gray',
   '-r', String(FPS), '-v', 'quiet', '-'
 ];
@@ -100,10 +109,10 @@ extract.on('close', (code) => {
   // lower floor so a real grey gradient separates detail instead of fusing.
   // Backgrounds stay pure white / pure black so the page's mix-blend-mode
   // (multiply / screen) makes the video edge seamless.
-  const FLOOR_LIGHT = 0.55;
+  const FLOOR_LIGHT = 0.75;
   const FLOOR_DARK = 0.5;
   const variants = [
-    { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], padX: 2, padY: 3, fgFn: (t) => { const v = Math.round(255 * (1 - (FLOOR_LIGHT + (1 - FLOOR_LIGHT) * t))); return [v, v, v]; } },
+    { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], padX: 1, padY: 2, fgFn: (t) => { const v = Math.round(255 * (1 - (FLOOR_LIGHT + (1 - FLOOR_LIGHT) * t))); return [v, v, v]; } },
     { output: 'heart_ascii_dark.mp4', bg: [0, 0, 0], padX: 2, padY: 3, fgFn: (t) => { const v = Math.round(228 * (FLOOR_DARK + (1 - FLOOR_DARK) * t)); return [v, v, v]; } },
   ];
 
