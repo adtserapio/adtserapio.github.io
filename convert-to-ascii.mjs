@@ -8,8 +8,8 @@ const INPUT = 'heart.mp4';
 // screens it's a clean 2:1 downscale. Both avoid the fractional-resample
 // moiré, so we can afford a finer grid (more detail) than the 60x43 we used
 // to hide the moiré.
-const COLS = 100;
-const ROWS = 90;  // 700x900 keeps the source's ~0.8 portrait aspect (crop 800x1000)
+const COLS = 110;
+const ROWS = 100;  // many, small cells = smaller circles, higher detail
 const FPS = 24;
 
 const RAMP = ' .:-=+*#%@';
@@ -33,8 +33,11 @@ const CONTRAST = 1.6;
 // what kills moiré across arbitrary zoom/DPR levels, which no encode size can.
 const BLUR = 0.8;
 
-const cellW = 7;  // 100 cols * 7 = 700px wide = 2x the 350px CSS display
-const cellH = 10; // 90 rows * 10 = 900px, ~matches the 800x1000 crop aspect
+// CSS display width now scales up to 620px on large screens (see
+// .ascii-video-wrap video in index.html); size the encode so it still
+// covers ~2x that at retina density without upscaling blur.
+const cellW = 12; // 100 cols * 12 = 1200px wide ~= 2x the 620px max CSS display
+const cellH = 18; // 90 rows * 18 = 1620px, ~matches the 800x1000 crop aspect
 // Display resolution of the encoded video.
 const videoW = COLS * cellW;
 const videoH = ROWS * cellH;
@@ -110,16 +113,50 @@ extract.on('close', (code) => {
   // Backgrounds stay pure white / pure black so the page's mix-blend-mode
   // (multiply / screen) makes the video edge seamless.
   const FLOOR_LIGHT = 0.75;
-  const FLOOR_DARK = 0.5;
+  const FLOOR_DARK = 0.7;
+
+  // Diagonal black -> gold sweep: glyph hue is purely positional (top-left to
+  // bottom-right), independent of brightness, so it reads as a reflection
+  // sweeping across the heart rather than tonal shading. Brightness t still
+  // controls how far each glyph sits between background and its position's
+  // fully-saturated color, so density/edges still read.
+  function lerp(a, b, p) { return a + (b - a) * p; }
+  function lerpColor(c1, c2, p) {
+    return [
+      Math.round(lerp(c1[0], c2[0], p)),
+      Math.round(lerp(c1[1], c2[1], p)),
+      Math.round(lerp(c1[2], c2[2], p)),
+    ];
+  }
+
+  const LIGHT_BLACK_HIGH = [10, 10, 10];     // near-black ink
+  const LIGHT_GOLD_HIGH = [158, 112, 8];     // darker, deeply saturated gold for contrast on white
+
+  const DARK_BLACK_HIGH = [60, 52, 30];      // dark bronze, softer against black bg
+  const DARK_GOLD_HIGH = [255, 196, 60];     // bright gold, pops against black
+
+  function makeFgFn(bg, lowColorA, highColorA, lowColorB, highColorB, floor) {
+    return (t, c, r) => {
+      const posT = (c / COLS + r / ROWS) / 2; // 0 (top-left) -> 1 (bottom-right)
+      const low = lerpColor(lowColorA, lowColorB, posT);
+      const high = lerpColor(highColorA, highColorB, posT);
+      const p = floor + (1 - floor) * t;
+      return lerpColor(low, high, p);
+    };
+  }
+
   const variants = [
-    { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], padX: 1, padY: 2, fgFn: (t) => { const v = Math.round(255 * (1 - (FLOOR_LIGHT + (1 - FLOOR_LIGHT) * t))); return [v, v, v]; } },
-    { output: 'heart_ascii_dark.mp4', bg: [0, 0, 0], padX: 2, padY: 3, fgFn: (t) => { const v = Math.round(228 * (FLOOR_DARK + (1 - FLOOR_DARK) * t)); return [v, v, v]; } },
+    { output: 'heart_ascii_light.mp4', bg: [255, 255, 255], fgFn: makeFgFn([255, 255, 255], [255, 255, 255], LIGHT_GOLD_HIGH, [255, 255, 255], LIGHT_BLACK_HIGH, FLOOR_LIGHT) },
+    { output: 'heart_ascii_dark.mp4', bg: [0, 0, 0], fgFn: makeFgFn([0, 0, 0], [0, 0, 0], DARK_GOLD_HIGH, [0, 0, 0], DARK_BLACK_HIGH, FLOOR_DARK) },
   ];
+
+  console.log('Building per-cell inorganic shape masks...');
+  const cellMasks = buildCellMasks();
 
   const usedFrameCount = asciiFrames.length;
   let done = 0;
   for (const variant of variants) {
-    encodeVariant(asciiFrames, usedFrameCount, variant, () => {
+    encodeVariant(asciiFrames, usedFrameCount, variant, cellMasks, () => {
       done++;
       if (done === variants.length) {
         console.log('Both variants complete.');
@@ -128,7 +165,30 @@ extract.on('close', (code) => {
   }
 });
 
-function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }, cb) {
+// A big, round dot per grid cell (same mask reused for every frame — only
+// its fill color animates).
+function buildCellMasks() {
+  const masks = new Array(COLS * ROWS);
+  const w = ssCellW, h = ssCellH;
+  const cx = w / 2, cy = h / 2;
+  const r = Math.min(w, h) * 0.5 * 0.78; // dot radius relative to cell; bigger cells + this ratio = more gap and bigger dots
+
+  const mask = new Uint8Array(w * h);
+  for (let py = 0; py < h; py++) {
+    for (let px = 0; px < w; px++) {
+      const dx = px + 0.5 - cx;
+      const dy = py + 0.5 - cy;
+      if (dx * dx + dy * dy <= r * r) {
+        mask[py * w + px] = 1;
+      }
+    }
+  }
+
+  for (let i = 0; i < COLS * ROWS; i++) masks[i] = mask;
+  return masks;
+}
+
+function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn }, cellMasks, cb) {
   const encodeArgs = [
     '-y', '-f', 'rawvideo', '-pixel_format', 'rgb24',
     '-video_size', `${ssW}x${ssH}`,
@@ -158,10 +218,6 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }
       frameBuffer[i * 3 + 2] = bg[2];
     }
 
-    // Padding scaled to the supersampled grid.
-    const ssPadX = padX * SS;
-    const ssPadY = padY * SS;
-
     const lines = asciiFrames[framesWritten].split('\n');
     for (let r = 0; r < lines.length; r++) {
       const line = lines[r];
@@ -172,13 +228,15 @@ function encodeVariant(asciiFrames, frameCount, { output, bg, fgFn, padX, padY }
         if (brightness === 0) continue;
 
         const t = brightness / 255;
-        const [rv, gv, bv] = fgFn(t);
+        const [rv, gv, bv] = fgFn(t, c, r);
 
+        const mask = cellMasks[r * COLS + c];
         const startX = c * ssCellW;
         const startY = r * ssCellH;
-        for (let py = startY + ssPadY; py < startY + ssCellH - ssPadY && py < ssH; py++) {
-          for (let px = startX + ssPadX; px < startX + ssCellW - ssPadX && px < ssW; px++) {
-            const idx = (py * ssW + px) * 3;
+        for (let py = 0; py < ssCellH && startY + py < ssH; py++) {
+          for (let px = 0; px < ssCellW && startX + px < ssW; px++) {
+            if (!mask[py * ssCellW + px]) continue;
+            const idx = ((startY + py) * ssW + (startX + px)) * 3;
             frameBuffer[idx] = rv;
             frameBuffer[idx + 1] = gv;
             frameBuffer[idx + 2] = bv;

@@ -53,7 +53,7 @@
 <!-- Google Fonts: Manrope -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;550;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;550;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Preload critical assets -->
   <link rel="preload" href="click_me.jpg" as="image" />
@@ -72,7 +72,9 @@
       --bg: #ffffff;
       --fg: #000000;
       --muted: #57606a;
-      --accent: #1f6feb;
+      --accent: #e6b800;
+      --highlight: color-mix(in oklab, var(--accent) 24%, transparent);
+      --highlight-hover: color-mix(in oklab, var(--accent) 42%, transparent);
       --card-border: rgba(13, 17, 23, 0.08);
       --maxw: 960px;
       --padx: 40px;
@@ -81,24 +83,24 @@
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #0d1117;
-        --fg: #c9d1d9;
-        --muted: #8b949e;
-        --accent: #58a6ff;
+        --fg: #ededed;
+        --muted: #a8a8a8;
+        --accent: #ffd84d;
         --card-border: rgba(255, 255, 255, 0.25);
       }
     }
     html[data-theme="dark"] {
       --bg: #0d1117;
-      --fg: #c9d1d9;
-      --muted: #8b949e;
-      --accent: #58a6ff;
+      --fg: #ededed;
+      --muted: #a8a8a8;
+      --accent: #ffd84d;
       --card-border: rgba(255, 255, 255, 0.25);
     }
     html[data-theme="light"] {
       --bg: #ffffff;
       --fg: #000000;
       --muted: #57606a;
-      --accent: #1f6feb;
+      --accent: #e6b800;
       --card-border: rgba(13, 17, 23, 0.08);
     }
 
@@ -123,8 +125,11 @@
       background: var(--bg);
     }
     .ascii-video-wrap video {
-      max-width: 350px;
-      max-height: 575px;
+      /* Scales with viewport width above the 1400px breakpoint instead of
+         capping at a fixed 350px, so large/high-res screens get a bigger
+         heart. Ratio (575/350 ≈ 1.643) kept consistent between the two. */
+      max-width: clamp(350px, 22vw, 620px);
+      max-height: clamp(575px, 36vw, 1020px);
       object-fit: contain;
       opacity: 1;
       /* white bg + multiply (light), black bg + screen (dark): the flat video
@@ -179,6 +184,7 @@
     html {
       overflow-y: scroll;
       scrollbar-gutter: stable;
+      background: var(--bg);
     }
     html, body { height: 100%; }
 
@@ -193,9 +199,15 @@
 
     a {
       color: var(--fg);
-      text-decoration: underline;
+      text-decoration: none;
+      background-image: linear-gradient(transparent 62%, var(--highlight) 62%);
+      background-repeat: no-repeat;
+      transition: background-image 0.2s ease;
+      border-radius: 2px;
     }
-    a:hover { text-decoration: none; }
+    a:hover {
+      background-image: linear-gradient(transparent 62%, var(--highlight-hover) 62%);
+    }
     a:focus-visible {
       outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
       outline-offset: 3px;
@@ -246,18 +258,17 @@
       cursor: pointer;
     }
     .avatar-wrap img {
-      width: 130px;
-      height: 130px;
+      width: 148px;
+      height: 148px;
       object-fit: cover;
       border-radius: 50%;
-      border: 1.5px solid var(--fg);
     }
     .avatar-wrap .click-hint {
       font-size: 11px;
       opacity: 0.7;
       font-style: italic;
       text-align: center;
-      width: 130px;
+      width: 148px;
       height: 3em;
     }
 
@@ -265,9 +276,13 @@
       margin: 0;
       font-size: clamp(30px, 4.5vw, 38px);
       letter-spacing: -0.3px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--fg);
-      font-family: "Spline Sans Mono", monospace;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      display: inline-block;
+      background-image: linear-gradient(transparent 70%, var(--highlight) 70%);
+      background-repeat: no-repeat;
+      padding: 0 2px;
     }
 
     .links { display:flex; gap:10px; }
@@ -280,14 +295,18 @@
       border-radius:50%;
       background: transparent;
       border: 1px solid var(--card-border);
-      transition: border-color 0.2s ease;
+      background-image: none;
+      transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     }
     .icon {
       text-decoration: none;
     }
     .icon:hover {
-      border-color: var(--fg);
+      border-color: var(--accent);
+      background-color: var(--accent);
+      color: #fff;
       text-decoration: none;
+      background-image: none;
     }
     .icon i { font-size: 19px; line-height: 1; }
 
@@ -302,6 +321,10 @@
     .bio-emphasis {
       font-weight: 500;
       color: color-mix(in oklab, var(--fg) 86%, var(--accent) 14%);
+      background-image: linear-gradient(transparent 62%, var(--highlight) 62%);
+      background-repeat: no-repeat;
+      border-radius: 2px;
+      padding: 0 1px;
     }
 
     hr {
@@ -320,8 +343,12 @@
       font-size: clamp(22px, 3vw, 28px);
       letter-spacing: -0.3px;
       color: var(--fg);
-      font-weight: 500;
-      font-family: "Spline Sans Mono", monospace;
+      font-weight: 600;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      display: inline-block;
+      background-image: linear-gradient(transparent 70%, var(--highlight) 70%);
+      background-repeat: no-repeat;
+      padding: 0 2px;
     }
 
     .pubs {
@@ -351,10 +378,10 @@
     }
     .pub .title a {
       color: inherit;
-      text-decoration: none;
+      background-image: none;
     }
     .pub .title a:hover {
-      text-decoration: underline;
+      background-image: linear-gradient(transparent 62%, var(--highlight-hover) 62%);
     }
     .pub .authors {
       color: var(--muted);
@@ -367,16 +394,15 @@
       font-size: 13px;
       font-weight: 400;
       color: var(--muted);
-      text-decoration: underline;
-      background: none;
       border: none;
-      transition: color 0.2s ease;
+      background-image: none;
+      transition: color 0.2s ease, background-image 0.2s ease;
       display: inline;
       font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
     }
     .pub .links a:hover {
       color: var(--fg);
-      text-decoration: none;
+      background-image: linear-gradient(transparent 62%, var(--highlight-hover) 62%);
     }
 
     footer {
@@ -438,7 +464,7 @@ Hi! I am a PhD student in the joint UC Berkeley-UCSF Bioengineering graduate pro
 I am also pursuing a designated emphasis in Computational Precision Health. I previously earned a bachelor’s degree in Electrical Engineering and Computer Science (EECS)
 from UC Berkeley. 
 <br/> <br/>
-My research is centered on Situated Clinical Intelligence with the goals of
+My research is centered on <span class="bio-emphasis">Situated Clinical Intelligence</span> with the goals of
 1) building multimodal AI systems grounded in clinical context, 
 2) architecting agentic systems that can support clinical decision-making, and 
 3) establishing the clinician-AI interface for synergistic collaboration.
