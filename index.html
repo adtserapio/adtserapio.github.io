@@ -12,7 +12,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Adrian Serapio is a UC Berkeley–UCSF Bioengineering PhD student building Situated Clinical Intelligence." />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="color-scheme" content="light" />
 
   <!-- Canonical -->
   <link rel="canonical" href="https://adtserapio.github.io/" />
@@ -80,29 +80,6 @@
       --padx: 40px;
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0d1117;
-        --fg: #ededed;
-        --muted: #a8a8a8;
-        --accent: #ffd84d;
-        --card-border: rgba(255, 255, 255, 0.25);
-      }
-    }
-    html[data-theme="dark"] {
-      --bg: #0d1117;
-      --fg: #ededed;
-      --muted: #a8a8a8;
-      --accent: #ffd84d;
-      --card-border: rgba(255, 255, 255, 0.25);
-    }
-    html[data-theme="light"] {
-      --bg: #ffffff;
-      --fg: #000000;
-      --muted: #57606a;
-      --accent: #e6b800;
-      --card-border: rgba(13, 17, 23, 0.08);
-    }
 
 
 
@@ -132,15 +109,10 @@
       max-height: clamp(575px, 36vw, 1020px);
       object-fit: contain;
       opacity: 1;
-      /* white bg + multiply (light), black bg + screen (dark): the flat video
-         background resolves exactly to the page bg, so its edge is invisible. */
+      /* white bg + multiply: the flat video background resolves exactly to
+         the page bg, so its edge is invisible. */
       mix-blend-mode: multiply;
     }
-    @media (prefers-color-scheme: dark) {
-      .ascii-video-wrap video { mix-blend-mode: screen; }
-    }
-    html[data-theme="dark"] .ascii-video-wrap video { mix-blend-mode: screen; }
-    html[data-theme="light"] .ascii-video-wrap video { mix-blend-mode: multiply; }
     @media (max-width: 1400px) {
       .ascii-video-wrap {
         position: relative;
@@ -156,28 +128,6 @@
         max-width: 220px;
         max-height: 360px;
       }
-    }
-
-    .theme-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 100;
-      background: transparent;
-      border: 1px solid var(--card-border);
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--fg);
-      font-size: 18px;
-      transition: border-color 0.2s ease;
-    }
-    .theme-toggle:hover {
-      border-color: var(--fg);
     }
 
     * { box-sizing: border-box; }
@@ -417,9 +367,6 @@
 </head>
 
 <body>
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-    <i class="fa-solid fa-moon" id="theme-icon"></i>
-  </button>
   <div class="wrap">
     <header>
       <div class="toprow">
@@ -488,44 +435,7 @@ My research is centered on <span class="bio-emphasis">Situated Clinical Intellig
     <video id="ascii-video" autoplay muted loop playsinline></video>
   </div>
   <script>
-    (function() {
-      var video = document.getElementById('ascii-video');
-      var toggle = document.getElementById('theme-toggle');
-      var icon = document.getElementById('theme-icon');
-      var mq = window.matchMedia('(prefers-color-scheme: dark)');
-      var currentSrc = '';
-
-      function isDark() {
-        var theme = document.documentElement.getAttribute('data-theme');
-        if (theme) return theme === 'dark';
-        return mq.matches;
-      }
-
-      function apply() {
-        var dark = isDark();
-        document.body.style.background = dark ? '#0d1117' : '#ffffff';
-        icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        var src = dark ? 'heart_ascii_dark.mp4' : 'heart_ascii_light.mp4';
-        if (src !== currentSrc) {
-          currentSrc = src;
-          video.src = src;
-          video.load();
-          video.play();
-        }
-      }
-
-      toggle.addEventListener('click', function() {
-        var dark = isDark();
-        document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
-        apply();
-      });
-
-      mq.addEventListener('change', function() {
-        if (!document.documentElement.getAttribute('data-theme')) apply();
-      });
-
-      apply();
-    })();
+    document.getElementById('ascii-video').src = 'heart_ascii_light.mp4';
   </script>
 
 

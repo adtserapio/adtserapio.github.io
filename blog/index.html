@@ -16,9 +16,6 @@
   <link rel="stylesheet" href="blog.css?v=3" />
 </head>
 <body>
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-    <i class="fa-solid fa-moon" id="theme-icon"></i>
-  </button>
   <div class="page">
     <header>
       <p class="site-title">Adrian Serapio</p>
@@ -46,36 +43,5 @@
     </footer>
   </div>
 
-  <script>
-    (function() {
-      var toggle = document.getElementById('theme-toggle');
-      var icon = document.getElementById('theme-icon');
-      var mq = window.matchMedia('(prefers-color-scheme: dark)');
-
-      function isDark() {
-        var theme = document.documentElement.getAttribute('data-theme');
-        if (theme) return theme === 'dark';
-        return mq.matches;
-      }
-
-      function apply() {
-        var dark = isDark();
-        document.body.style.background = dark ? '#0d1117' : '#ffffff';
-        icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-      }
-
-      toggle.addEventListener('click', function() {
-        var dark = isDark();
-        document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
-        apply();
-      });
-
-      mq.addEventListener('change', function() {
-        if (!document.documentElement.getAttribute('data-theme')) apply();
-      });
-
-      apply();
-    })();
-  </script>
 </body>
 </html>
