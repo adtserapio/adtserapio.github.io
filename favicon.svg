@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <mask id="cuts">
+      <rect width="100" height="100" fill="#fff"/>
+      <g fill="none" stroke="#000" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M31 11 Q29 22 32 32 Q40 40 45 54"/>
+        <path d="M12 47 Q22 37 32 32"/>
+        <path d="M54 23 Q42 25 35 34"/>
+        <path d="M62 44 Q60 64 53 84"/>
+        <path d="M61 49 Q73 52 88 49"/>
+      </g>
+    </mask>
+  </defs>
+  <g transform="translate(50 0) scale(0.85 1) translate(-50 0)">
+  <g fill="#BF9B30" stroke="#BF9B30" stroke-linecap="round" stroke-linejoin="round" mask="url(#cuts)">
+    <path stroke="none" d="M14 46 C9 60 14 74 28 84 C38 91 46 97 54 96 C64 95 74 86 81 74 C87 63 88 52 85 44 C81 35 70 34 60 38 L30 38 C22 38 16 41 14 46 Z"/>
+    <path stroke-width="12" fill="none" d="M20 46 Q16 28 23 14"/>
+    <path stroke-width="12" fill="none" d="M39 40 Q36 26 43 18 Q49 12 56 14 Q62 16 64 22"/>
+    <path stroke="none" d="M38 40 L38 22 L64 22 L64 34 Z M48 40 L56 30 L70 33 L68 40 Z"/>
+    <path stroke-width="5" fill="none" d="M44 16 Q42 10 40 5 M51 13 Q51 8 52 4 M58 15 Q60 10 63 6"/>
+    <path stroke-width="15" fill="none" d="M42 44 C47 32 60 22 79 26"/>
+  </g>
+  </g>
+</svg>
